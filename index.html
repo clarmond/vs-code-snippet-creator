@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+		<title>VS Code Snippet Creator</title>
+
+		<style>
+			.code-box {
+				font-family: 'Courier New', Courier, monospace;
+				height: 200px;
+				tab-size : 4;
+				width: 100%;
+			}
+			.indented {
+				padding-left: 20px;
+			}
+			.text-box {
+				margin-bottom: 10px;
+				width: 100%
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container" id="app">
+			<div class="row">
+			<div class="col-md">
+				<h1>Code</h1>
+				<textarea id="raw-code" class="code-box" v-model.trim="rawCode" v-on:change="updateSnippet"></textarea>
+				<h2>Options</h2>
+				<div>
+					<input type="text" id="description" v-model.trim="snippetDescription" placeholder="Snippet description" class="text-box" v-on:change="updateSnippet">
+					<input type="text" id="prefix" v-model.trim="snippetPrefix" placeholder="Snippet prefix" class="text-box" v-on:change="updateSnippet">
+				</div>
+				<br>
+				<div>
+					<input name="tab_type" type="radio" id="tab-type-tabs" value="	" v-model="tabValue" v-on:change="updateSnippet">
+					<label for="tab-type-tabs">Tabs</label>
+					<br>
+					<input name="tab_type" type="radio" id="tab-type-spaces" value=" " v-model="tabValue" v-on:change="updateSnippet">
+					<label for="tab-type-spaces">Spaces</label>
+					<br>
+					<div class="indented">
+						<select name="number_of_spaces" :disabled="tabValue!=' '" v-model="numberOfSpaces" v-on:change="updateSnippet">
+							<option value="2" selected>2</option>
+							<option value="4">4</option>
+							<option value="4">8</option>
+						</select>
+					</div>
+				</div>
+				<br>
+				<div>
+					<div>
+						<input id="preserve-dollar-signs" v-model="preserveDollarSigns" type="checkbox" v-on:change="updateSnippet">
+						<label for="preserve-dollar-signs">Preserve dollar signs</label>
+					</div>
+				</div>
+			</div>
+			<div class="col-md">
+				<h1>Results</h1>
+				<textarea id="results" class="code-box" v-model="codeSnippet"></textarea>
+			</div>
+			</div>
+		</div>
+
+		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
+
+		<script>
+			var app = new Vue({
+			el: '#app',
+			data: {
+				codeSnippet: '',
+				rawCode: '',
+				preserveDollarSigns: false,
+				snippetDescription: '',
+				snippetPrefix: '',
+				tabValue: "\t",
+				numberOfSpaces: 2
+			},
+			methods: {
+				updateSnippet: function() {
+					var snippetObject = {
+						"//label-placeholder//": {
+						"prefix": this.snippetPrefix,
+						"body": this.rawCode.split(/\n/),
+						"description": this.snippetDescription
+						}
+					}
+					var tabString;
+					if (this.tabValue === " ") {
+						tabString = " ".repeat(this.numberOfSpaces);
+					}
+					else {
+						tabString = this.tabValue;
+					}
+					var snippetString = JSON.stringify(snippetObject, null, tabString)
+						.replace(/^\{\n/, "")
+						.replace(/\}$/, "")
+						.replace(/\n$/, ",")
+						.replace("//label-placeholder//", this.snippetPrefix)
+					;
+					if (this.preserveDollarSigns) {
+						snippetString = snippetString.replace(/\$/g, "\\\\\$");
+					}
+					this.codeSnippet = snippetString;
+					}
+				}
+			})
+		</script>
+	</body>
+</html>
